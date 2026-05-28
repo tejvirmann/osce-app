@@ -94,7 +94,8 @@ export async function POST(req: NextRequest) {
       text = res.choices[0].message.content ?? "";
     }
 
-    const raw = JSON.parse(text);
+    const jsonText = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const raw = JSON.parse(jsonText);
     // Stamp a fresh id so duplicates don't collide
     raw.id = `osce_${nanoid(8)}`;
     const spec = OsceSpecSchema.parse(raw);

@@ -22,7 +22,7 @@ export default async function DashboardPage() {
             <h1 className="text-lg font-semibold">OSCE Voice Platform</h1>
             <p className="text-sm text-muted-foreground">Professor Dashboard</p>
           </div>
-          <Button render={<Link href="/create" />}>
+          <Button render={<Link href="/create" />} nativeButton={false}>
             <PlusIcon className="mr-2 h-4 w-4" />
             New Scenario
           </Button>
@@ -33,7 +33,7 @@ export default async function DashboardPage() {
         {scenarios.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-white py-20 text-center">
             <p className="text-muted-foreground">No scenarios yet.</p>
-            <Button render={<Link href="/create" />} className="mt-4">
+            <Button render={<Link href="/create" />} nativeButton={false} className="mt-4">
               Create your first OSCE
             </Button>
           </div>
@@ -68,11 +68,11 @@ export default async function DashboardPage() {
                         </span>
                       )}
                       <div className="flex gap-2 ml-auto">
-                        <Button size="sm" variant="outline" render={<Link href={`/osces/${s.id}/test`} />}>
+                        <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/osces/${s.id}/test`} />}>
                           <FlaskConicalIcon className="mr-1.5 h-3.5 w-3.5" />
                           Test
                         </Button>
-                        <Button size="sm" variant="outline" render={<Link href={`/osces/${s.id}`} />}>
+                        <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/osces/${s.id}`} />}>
                           Edit
                         </Button>
                       </div>

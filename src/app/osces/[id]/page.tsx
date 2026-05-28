@@ -22,7 +22,7 @@ export default async function OsceDetailPage({ params }: { params: Promise<{ id:
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b bg-white px-6 py-4">
         <div className="mx-auto max-w-3xl flex items-center gap-3">
-          <Button variant="ghost" size="sm" render={<Link href="/dashboard" />}>
+          <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/dashboard" />}>
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
           <div className="flex-1">
@@ -35,7 +35,7 @@ export default async function OsceDetailPage({ params }: { params: Promise<{ id:
             <p className="text-sm text-muted-foreground">{spec.patient.chief_complaint}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" render={<Link href={`/osces/${id}/test`} />}>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/osces/${id}/test`} />}>
               <FlaskConicalIcon className="mr-1.5 h-3.5 w-3.5" />
               Test
             </Button>

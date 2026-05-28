@@ -20,7 +20,7 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b bg-white px-6 py-4">
         <div className="mx-auto max-w-3xl flex items-center gap-3">
-          <Button variant="ghost" size="sm" render={<Link href={`/osces/${id}`} />}>
+          <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={`/osces/${id}`} />}>
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
           <div>
