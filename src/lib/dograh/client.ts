@@ -22,6 +22,36 @@ export type DograhWorkflow = {
   workflow_definition: Record<string, unknown>;
 };
 
+export type RtfEvent = {
+  type: string;
+  timestamp: string;
+  turn: number;
+  node_id: string;
+  node_name: string;
+  payload: Record<string, unknown>;
+};
+
+export type DograhRunStatus = {
+  id: number;
+  workflow_id: number;
+  name: string;
+  mode: string;
+  created_at: string;
+  is_completed: boolean;
+  transcript_url: string | null;
+  recording_url: string | null;
+  logs: {
+    realtime_feedback_events?: RtfEvent[];
+    telephony_status_callbacks?: Record<string, unknown>[];
+  } | null;
+  gathered_context: {
+    provider?: string;
+    call_id?: string;
+    nodes_visited?: string[];
+    call_disposition?: string;
+  } | null;
+};
+
 export const dograh = {
   createWorkflow: (name: string, workflow_definition: unknown) =>
     request<DograhWorkflow>("/api/v1/workflow/create/definition", {
@@ -48,8 +78,14 @@ export const dograh = {
     request<void>(`/api/v1/workflow/${id}`, { method: "DELETE" }),
 
   initiateCall: (workflowId: number, toPhoneNumber: string) =>
-    request<{ id: number }>("/api/v1/telephony/initiate-call", {
+    request<Record<string, unknown>>("/api/v1/telephony/initiate-call", {
       method: "POST",
       body: JSON.stringify({ workflow_id: workflowId, phone_number: toPhoneNumber }),
     }),
+
+  getLatestRun: (workflowId: number) =>
+    request<{ runs: DograhRunStatus[] }>(`/api/v1/workflow/${workflowId}/runs?limit=1`),
+
+  getRunStatus: (workflowId: number, runId: number) =>
+    request<DograhRunStatus>(`/api/v1/workflow/${workflowId}/runs/${runId}`),
 };

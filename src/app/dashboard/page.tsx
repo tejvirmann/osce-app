@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { PlusIcon, PhoneIcon, FlaskConicalIcon } from "lucide-react";
-import type { OsceScenario } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {scenarios.map((s: OsceScenario) => {
+            {scenarios.map((s) => {
               const spec = s.spec as { patient?: { chief_complaint?: string } };
               return (
                 <Card key={s.id} className="hover:shadow-sm transition-shadow">

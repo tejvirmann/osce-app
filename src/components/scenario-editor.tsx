@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { OsceSpecPreview } from "@/components/osce-spec-preview";
+import { WorkflowGraph } from "@/components/workflow-graph";
 import type { OsceSpec } from "@/lib/schemas/osce";
 
 interface Props {
@@ -49,6 +50,10 @@ export function ScenarioEditor({ id, initialSpec }: Props) {
           </Button>
         </div>
       )}
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">Workflow Graph</p>
+        <WorkflowGraph spec={spec} className="h-64" />
+      </div>
       <OsceSpecPreview spec={spec} onSpecChange={handleChange} />
     </div>
   );
