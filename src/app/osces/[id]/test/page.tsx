@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeftIcon, PhoneIcon, InfoIcon } from "lucide-react";
+import { TestCallButton } from "@/components/test-call-button";
 import type { OsceSpec } from "@/lib/schemas/osce";
 
 export const dynamic = "force-dynamic";
@@ -69,20 +70,17 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <PhoneIcon className="h-4 w-4" />
-              Browser Call
+              Browser Test Call
             </CardTitle>
             <CardDescription>
-              Start a web-based call to this scenario via Dograh. Live state transitions will appear here.
+              Opens the Dograh workflow in a new tab where you can run a live voice test.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {scenario.dograhWorkflowIdTraining ? (
-              <Button className="w-full">Start Test Call (Training Mode)</Button>
-            ) : (
-              <Button className="w-full" disabled>
-                Publish scenario first to enable test calls
-              </Button>
-            )}
+            <TestCallButton
+              scenarioId={id}
+              disabled={scenario.status === "draft"}
+            />
           </CardContent>
         </Card>
       </main>

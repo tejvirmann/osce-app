@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { dograh } from "@/lib/dograh/client";
+import { buildDograhWorkflow } from "@/lib/dograh/build-workflow";
+import type { OsceSpec } from "@/lib/schemas/osce";
 
-// Stub: will call dograh.createWorkflow() once Dograh API is confirmed
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const scenario = await db.osceScenario.findUnique({ where: { id } });
@@ -10,15 +12,37 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: "Already published" }, { status: 400 });
   }
 
-  // TODO: call dograh.createWorkflow() for training + exam modes
-  // const spec = scenario.spec as OsceSpec;
-  // const trainingId = await dograh.createWorkflow(buildDograhWorkflow(spec, "training"));
-  // const examId = await dograh.createWorkflow(buildDograhWorkflow(spec, "exam"));
+  const spec = scenario.spec as OsceSpec;
 
-  const updated = await db.osceScenario.update({
-    where: { id },
-    data: { status: "published" },
-  });
+  try {
+    async function createAndPublish(name: string, mode: "training" | "exam") {
+      const wf = await dograh.createWorkflow(name, buildDograhWorkflow(spec, mode));
+      await dograh.createDraft(wf.id);
+      await dograh.publishWorkflow(wf.id);
+      return wf;
+    }
 
-  return NextResponse.json(updated);
+    const [trainingWorkflow, examWorkflow] = await Promise.all([
+      createAndPublish(`${spec.title} — Training`, "training"),
+      createAndPublish(`${spec.title} — Exam`, "exam"),
+    ]);
+
+    // Save workflow IDs and mark published
+    const updated = await db.osceScenario.update({
+      where: { id },
+      data: {
+        status: "published",
+        dograhWorkflowIdTraining: String(trainingWorkflow.id),
+        dograhWorkflowIdExam: String(examWorkflow.id),
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("Dograh publish error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to publish to Dograh" },
+      { status: 502 }
+    );
+  }
 }

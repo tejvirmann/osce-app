@@ -200,12 +200,26 @@ src/
 
 ## 🗺️ Roadmap
 
-- [ ] Wire `publish` → `dograh.createWorkflow()` for both modes
-- [ ] Live call monitoring dashboard (Dograh webhooks)
+### 🔧 POC (in progress)
+- [ ] Wire `publish` → `dograh.createWorkflow()` for training + exam modes
+- [ ] Inline spec editing (patient fields, states, transitions, evaluation criteria)
+- [ ] Browser test call via Dograh embed (no phone needed)
+- [ ] Live call monitoring dashboard (Dograh webhooks → run status)
 - [ ] Per-call evaluation scoring display
+
+### 🚀 v1
 - [ ] PDF upload → spec extraction (vision model)
+- [ ] Visual state machine diagram (read-only flow view of patient journey)
 - [ ] Multi-tenant (per-department scenarios)
 - [ ] Student analytics & cohort reports
+
+### 💡 Future
+- [ ] **SMS during call** — narrator sends contextual text messages to the student mid-call (e.g. "patient's blood pressure drops", lab results) via Twilio SMS
+- [ ] **Image texting** — send MMS images during the call (X-rays, ECGs, rashes) as clinical prompts
+- [ ] **Multi-character SMS** — narrator, patient, and family members can all text the student simultaneously, each with their own voice and personality
+- [ ] **Multiple voices per scenario** — assign distinct ElevenLabs voices to each character (anxious patient vs. calm narrator vs. concerned relative)
+- [ ] **Ambient sound** — background noise per state (hospital ward, home, A&E) via Dograh ambient audio nodes
+- [ ] **Post-call debrief** — AI-generated per-student feedback based on transcript + evaluation criteria
 
 ---
 

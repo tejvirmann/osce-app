@@ -1,6 +1,3 @@
-// Dograh REST API client
-// Base URL comes from DOGRAH_API_URL env var (exposed via Cloudflare Tunnel)
-
 const base = process.env.DOGRAH_API_URL ?? "http://localhost:8000";
 const key = process.env.DOGRAH_API_KEY ?? "";
 
@@ -9,23 +6,50 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      "X-API-Key": key,
       ...init?.headers,
     },
   });
-  if (!res.ok) throw new Error(`Dograh API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Dograh ${res.status}: ${await res.text()}`);
   return res.json() as Promise<T>;
 }
 
+export type DograhWorkflow = {
+  id: number;
+  name: string;
+  status: string;
+  workflow_uuid: string | null;
+  workflow_definition: Record<string, unknown>;
+};
+
 export const dograh = {
-  createWorkflow: (body: unknown) =>
-    request("/api/v1/workflows", { method: "POST", body: JSON.stringify(body) }),
+  createWorkflow: (name: string, workflow_definition: unknown) =>
+    request<DograhWorkflow>("/api/v1/workflow/create/definition", {
+      method: "POST",
+      body: JSON.stringify({ name, workflow_definition }),
+    }),
 
-  updateWorkflow: (id: string, body: unknown) =>
-    request(`/api/v1/workflows/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  createDraft: (id: number) =>
+    request<{ id: number; status: string }>(`/api/v1/workflow/${id}/create-draft`, { method: "POST" }),
 
-  getWorkflow: (id: string) => request(`/api/v1/workflows/${id}`),
+  publishWorkflow: (id: number) =>
+    request<DograhWorkflow>(`/api/v1/workflow/${id}/publish`, { method: "POST" }),
 
-  deleteWorkflow: (id: string) =>
-    request(`/api/v1/workflows/${id}`, { method: "DELETE" }),
+  updateWorkflow: (id: number, workflow_definition: unknown) =>
+    request<DograhWorkflow>(`/api/v1/workflow/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ workflow_definition }),
+    }),
+
+  getWorkflow: (id: number) =>
+    request<DograhWorkflow>(`/api/v1/workflow/fetch/${id}`),
+
+  deleteWorkflow: (id: number) =>
+    request<void>(`/api/v1/workflow/${id}`, { method: "DELETE" }),
+
+  initiateCall: (workflowId: number, toPhoneNumber: string) =>
+    request<{ id: number }>("/api/v1/telephony/initiate-call", {
+      method: "POST",
+      body: JSON.stringify({ workflow_id: workflowId, phone_number: toPhoneNumber }),
+    }),
 };

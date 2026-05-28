@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeftIcon, FlaskConicalIcon } from "lucide-react";
-import { OsceSpecPreview } from "@/components/osce-spec-preview";
+import { ScenarioEditor } from "@/components/scenario-editor";
 import { PublishButton } from "@/components/publish-button";
 import type { OsceSpec } from "@/lib/schemas/osce";
 
@@ -52,7 +52,7 @@ export default async function OsceDetailPage({ params }: { params: Promise<{ id:
           </div>
         )}
         <Separator />
-        <OsceSpecPreview spec={spec} />
+        <ScenarioEditor id={id} initialSpec={spec} />
       </main>
     </div>
   );

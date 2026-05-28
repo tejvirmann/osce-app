@@ -12,12 +12,26 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeftIcon, SparklesIcon, UploadIcon } from "lucide-react";
 import type { OsceSpec } from "@/lib/schemas/osce";
 import { OsceSpecPreview } from "@/components/osce-spec-preview";
+import { StepProgress } from "@/components/step-progress";
 
-type Step = "input" | "preview";
+type PageStep = "input" | "preview";
+
+const EXTRACT_STEPS = [
+  { label: "Sending scenario to Claude...", delayMs: 0 },
+  { label: "Parsing patient demographics...", delayMs: 4000 },
+  { label: "Building patient state machine...", delayMs: 9000 },
+  { label: "Generating evaluation criteria...", delayMs: 16000 },
+  { label: "Validating OSCE spec...", delayMs: 23000 },
+];
+
+const SAVE_STEPS = [
+  { label: "Saving scenario to database...", delayMs: 0 },
+  { label: "Redirecting to editor...", delayMs: 800 },
+];
 
 export default function CreatePage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("input");
+  const [step, setStep] = useState<PageStep>("input");
   const [mode, setMode] = useState<"text" | "pdf">("text");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -125,6 +139,7 @@ export default function CreatePage() {
                     className="min-h-48 resize-y"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    disabled={extracting}
                   />
                 </div>
               ) : (
@@ -151,13 +166,15 @@ export default function CreatePage() {
                 </div>
               )}
 
+              <StepProgress steps={EXTRACT_STEPS} active={extracting} />
+
               <Button
                 className="w-full"
                 onClick={handleExtract}
                 disabled={extracting || (mode === "text" ? !description.trim() : !file)}
               >
                 <SparklesIcon className="mr-2 h-4 w-4" />
-                {extracting ? "Extracting..." : "Extract OSCE Spec"}
+                {extracting ? "Working..." : "Extract OSCE Spec"}
               </Button>
             </CardContent>
           </Card>
@@ -165,13 +182,16 @@ export default function CreatePage() {
           spec && (
             <div className="space-y-6">
               <OsceSpecPreview spec={spec} onSpecChange={setSpec} />
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep("input")}>
-                  Back
-                </Button>
-                <Button className="flex-1" onClick={handleSave} disabled={saving}>
-                  {saving ? "Saving..." : "Save as Draft"}
-                </Button>
+              <div className="space-y-3">
+                <StepProgress steps={SAVE_STEPS} active={saving} />
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setStep("input")} disabled={saving}>
+                    Back
+                  </Button>
+                  <Button className="flex-1" onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : "Save as Draft"}
+                  </Button>
+                </div>
               </div>
             </div>
           )
