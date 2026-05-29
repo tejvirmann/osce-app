@@ -9,11 +9,38 @@ export const PatientSchema = z.object({
   voice_profile: z.string(),
 });
 
+export const TTS_VOICES = {
+  "openai-nova": {
+    label: "OpenAI · nova",
+    description: "Fast, natural — great for practice",
+    dograh: { tts_provider: "openai", tts_model: "gpt-4o-mini-tts", voice_id: "nova" },
+  },
+  "orpheus-tara": {
+    label: "Orpheus · tara",
+    description: "Highly emotional — realistic simulation",
+    dograh: { tts_provider: "speaches", tts_model: "canopylabs/orpheus-3b-0.1-ft", voice_id: "tara" },
+  },
+  "zonos": {
+    label: "Zonos",
+    description: "Expressive — good quality/cost balance",
+    dograh: { tts_provider: "speaches", tts_model: "zyphra/zonos-v0.1-hybrid", voice_id: undefined },
+  },
+  "elevenlabs-rachel": {
+    label: "ElevenLabs · Rachel",
+    description: "Professional — best for demos",
+    dograh: { tts_provider: "elevenlabs", tts_model: "eleven_multilingual_v2", voice_id: "21m00Tcm4TlvDq8ikWAM" },
+  },
+} as const;
+
+export type TtsVoiceKey = keyof typeof TTS_VOICES;
+
 export const ModeConfigSchema = z.object({
   llm_provider: z.literal("openrouter"),
   llm_model: z.string(),
-  tts: z.string(),
+  tts_voice: z.enum(["openai-nova", "orpheus-tara", "zonos", "elevenlabs-rachel"]).default("openai-nova"),
   tts_exaggeration: z.number().optional(),
+  // legacy fields — kept so old specs still parse
+  tts: z.string().optional(),
   voice_id: z.string().optional(),
 });
 

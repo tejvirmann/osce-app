@@ -1,8 +1,13 @@
+import { TTS_VOICES, type TtsVoiceKey } from "@/lib/schemas/osce";
 import type { OsceSpec } from "@/lib/schemas/osce";
 
 export function buildDograhWorkflow(spec: OsceSpec, mode: "training" | "exam") {
   const startState = spec.states.find((s) => s.is_start) ?? spec.states[0];
   const otherStates = spec.states.filter((s) => s.id !== startState.id);
+
+  const modeConfig = spec.modes[mode];
+  const voiceKey = (modeConfig.tts_voice ?? "openai-nova") as TtsVoiceKey;
+  const ttsConfig = TTS_VOICES[voiceKey]?.dograh ?? TTS_VOICES["openai-nova"].dograh;
 
   const globalNode = {
     id: "global",
@@ -11,6 +16,9 @@ export function buildDograhWorkflow(spec: OsceSpec, mode: "training" | "exam") {
     data: {
       name: "Global Node",
       prompt: buildGlobalPrompt(spec, mode),
+      tts_provider: ttsConfig.tts_provider,
+      tts_model: ttsConfig.tts_model,
+      ...(ttsConfig.voice_id ? { voice_id: ttsConfig.voice_id } : {}),
     },
   };
 

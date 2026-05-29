@@ -7,7 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { nanoid } from "nanoid";
+import { TTS_VOICES, type TtsVoiceKey } from "@/lib/schemas/osce";
 import type { OsceSpec } from "@/lib/schemas/osce";
+
+const enabledVoiceKeys = (process.env.NEXT_PUBLIC_ENABLED_VOICES ?? Object.keys(TTS_VOICES).join(","))
+  .split(",").map((k) => k.trim()).filter((k) => k in TTS_VOICES) as TtsVoiceKey[];
 
 const TONE_COLORS: Record<string, string> = {
   neutral: "bg-zinc-100 text-zinc-700",
@@ -291,21 +295,37 @@ export function OsceSpecPreview({ spec, onSpecChange }: Props) {
           <CardTitle className="text-base">Models</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4 text-sm">
-          {(["training", "exam"] as const).map((mode) => (
-            <div key={mode} className="space-y-2">
-              <p className="font-medium capitalize">{mode}</p>
-              <Field label="LLM" value={spec.modes[mode].llm_model} editable={editable}
-                onChange={(v) => patch({
-                  modes: { ...spec.modes, [mode]: { ...spec.modes[mode], llm_model: v } },
-                })}
-              />
-              <Field label="TTS" value={spec.modes[mode].tts} editable={editable}
-                onChange={(v) => patch({
-                  modes: { ...spec.modes, [mode]: { ...spec.modes[mode], tts: v } },
-                })}
-              />
-            </div>
-          ))}
+          {(["training", "exam"] as const).map((mode) => {
+            const voiceKey = (spec.modes[mode].tts_voice ?? "openai-nova") as TtsVoiceKey;
+            return (
+              <div key={mode} className="space-y-2">
+                <p className="font-medium capitalize">{mode}</p>
+                <Field label="LLM" value={spec.modes[mode].llm_model} editable={editable}
+                  onChange={(v) => patch({
+                    modes: { ...spec.modes, [mode]: { ...spec.modes[mode], llm_model: v } },
+                  })}
+                />
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Voice</p>
+                  {editable ? (
+                    <select
+                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      value={voiceKey}
+                      onChange={(e) => patch({
+                        modes: { ...spec.modes, [mode]: { ...spec.modes[mode], tts_voice: e.target.value as TtsVoiceKey } },
+                      })}
+                    >
+                      {enabledVoiceKeys.map((k) => (
+                        <option key={k} value={k}>{TTS_VOICES[k].label} — {TTS_VOICES[k].description}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p>{TTS_VOICES[voiceKey]?.label ?? voiceKey}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
     </div>

@@ -22,13 +22,12 @@ The JSON must match this exact shape:
     "training": {
       "llm_provider": "openrouter",
       "llm_model": "meta-llama/llama-3.1-8b-instruct",
-      "tts": "chatterbox",
-      "tts_exaggeration": 0.4
+      "tts_voice": "openai-nova"
     },
     "exam": {
       "llm_provider": "openrouter",
       "llm_model": "anthropic/claude-sonnet-4-6",
-      "tts": "elevenlabs-turbo-v2.5"
+      "tts_voice": "elevenlabs-rachel"
     }
   },
   "states": [
