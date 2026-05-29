@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import type { OsceScenario } from "@prisma/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +38,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {scenarios.map((s: OsceScenario) => {
+            {scenarios.map((s: (typeof scenarios)[number]) => {
               const spec = s.spec as { patient?: { chief_complaint?: string } };
               return (
                 <Card key={s.id} className="hover:shadow-sm transition-shadow">
