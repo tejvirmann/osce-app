@@ -133,6 +133,38 @@ Each scenario defines a set of emotional states and natural-language triggers th
 
 ---
 
+## 🎙️ Supported Models
+
+### LLM (via OpenRouter)
+
+Any OpenRouter model can be used — just paste the model ID into the scenario spec. Recommended:
+
+| Model ID | Use case |
+|---|---|
+| `anthropic/claude-sonnet-4-6` | Exam mode — best quality |
+| `meta-llama/llama-3.1-8b-instruct` | Training mode — fast & cheap |
+| `deepseek/deepseek-chat-v4-5-flash` | Training mode — fast, good quality |
+| `google/gemini-flash-1.5` | Training mode — low latency |
+
+### TTS Voice (per scenario)
+
+Controlled by `tts_voice` in the scenario spec. Add/remove options via `NEXT_PUBLIC_ENABLED_VOICES` in `.env.local`.
+
+| Key | Provider | Model | Notes |
+|---|---|---|---|
+| `openai-nova` | OpenAI | `gpt-4o-mini-tts` | Fast, natural — default |
+| `orpheus-tara` | speaches (OpenRouter) | `canopylabs/orpheus-3b-0.1-ft` | Highly emotional |
+| `zonos` | speaches (OpenRouter) | `zyphra/zonos-v0.1-hybrid` | Expressive |
+| `elevenlabs-rachel` | ElevenLabs | `eleven_multilingual_v2` | Professional quality |
+
+To add a new voice, add an entry to `TTS_VOICES` in `src/lib/schemas/osce.ts` with its `dograh` config (tts_provider, tts_model, voice_id).
+
+### Transcriber
+
+OpenAI Whisper (`whisper-1`) via the OpenAI key configured in Dograh.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -168,6 +200,93 @@ npm run dev
 ```
 
 Open [http://localhost:3002](http://localhost:3002).
+
+---
+
+## 🐳 Deploying Dograh (Self-Hosted)
+
+Dograh runs as a set of Docker containers. These notes cover the non-obvious issues you'll hit deploying it to a fresh VPS.
+
+### Recommended server
+
+Hetzner CPX21 (3 vCPU, 4GB RAM, 80GB SSD) — $13.99/mo. The 2GB CPX11 is too small. GCP e2-micro (1GB RAM) won't work. Pick **Docker CE** as the app image when creating the server so Docker is pre-installed.
+
+### SSH access
+
+When creating the server, add your SSH public key in the Hetzner UI **before** creating the server. If you need to generate one:
+
+```bash
+ssh-keygen -t ed25519 -C "your-comment"
+# Press enter to accept default path (~/.ssh/id_ed25519)
+cat ~/.ssh/id_ed25519.pub  # paste this into Hetzner
+```
+
+Connect with:
+```bash
+ssh -i ~/.ssh/id_ed25519 root@<your-server-ip>
+```
+
+**Important:** When adding a Hetzner firewall, always include port 22 (TCP inbound) or you will lock yourself out.
+
+### Setup
+
+```bash
+# On the server
+git clone https://github.com/dograh-hq/dograh .
+cp .env.example .env
+# Edit .env — see required vars below
+docker compose up -d
+```
+
+### Required `.env` values
+
+```env
+REGISTRY=ghcr.io/dograh-hq
+BACKEND_API_ENDPOINT=http://api:8000       # must use Docker service name, not public IP
+MINIO_PUBLIC_ENDPOINT=http://<your-ip>:9000
+ENVIRONMENT=local
+ENABLE_TELEMETRY=true
+OSS_JWT_SECRET=<random string>
+```
+
+`BACKEND_API_ENDPOINT` **must be `http://api:8000`** (Docker internal hostname). If you set it to your public IP (e.g. `http://178.x.x.x:8000`), the UI will return 404 on login because it can't proxy requests back through the public IP.
+
+### Postgres password fix
+
+On first run, if the API crashes with `InvalidPasswordError`, the Postgres volume was initialised with a different password than what the API expects. Fix it:
+
+```bash
+# Add trust auth for Docker internal network
+docker compose exec postgres bash -c \
+  "echo 'host all all 172.18.0.0/16 trust' >> /var/lib/postgresql/data/pg_hba.conf \
+   && psql -U postgres -c 'SELECT pg_reload_conf();'"
+docker compose restart api
+```
+
+### Login won't work (cookies)
+
+The Dograh UI sets cookies with the `Secure` flag, which means they **only work over HTTPS**. Accessing the UI via plain `http://<ip>:3010` will let you reach the login page but auth will never stick — it always bounces back.
+
+**Fix:** use the built-in Cloudflare tunnel. By default the tunnel points to the API port. Change it to point to the UI:
+
+```bash
+sed -i 's|--url http://api:8000|--url http://ui:3010|' docker-compose.yaml
+docker compose up -d --force-recreate cloudflared
+docker compose logs cloudflared --tail=20
+# Look for: https://xxxx.trycloudflare.com
+```
+
+Use that `https://` URL to access the UI. Login will work.
+
+> Note: quick Tunnel URLs are random and change every restart. For a stable URL, set up a [named Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps) with a real domain.
+
+### Connect the Next.js app
+
+Once Dograh is running, update `.env.local`:
+
+```env
+DOGRAH_API_URL="http://<your-server-ip>:8000"
+```
 
 ---
 
