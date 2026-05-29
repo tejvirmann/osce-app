@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { openrouter } from "@/lib/openrouter";
+import { getOpenRouter } from "@/lib/openrouter";
 import { OsceSpecSchema } from "@/lib/schemas/osce";
 import { z } from "zod";
 import { nanoid } from "nanoid";
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const base64 = Buffer.from(bytes).toString("base64");
 
-      const res = await openrouter.chat.completions.create({
+      const res = await getOpenRouter().chat.completions.create({
         model: "openai/gpt-4o",
         messages: [
           { role: "system", content: EXTRACT_SYSTEM_PROMPT },
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       const { description } = await req.json() as { description: string };
       if (!description) return NextResponse.json({ error: "No description provided" }, { status: 400 });
 
-      const res = await openrouter.chat.completions.create({
+      const res = await getOpenRouter().chat.completions.create({
         model: "anthropic/claude-sonnet-4-6",
         messages: [
           { role: "system", content: EXTRACT_SYSTEM_PROMPT },
