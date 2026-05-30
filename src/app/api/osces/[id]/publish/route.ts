@@ -8,13 +8,19 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
   const { id } = await params;
   const scenario = await db.osceScenario.findUnique({ where: { id } });
   if (!scenario) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (scenario.status === "published") {
-    return NextResponse.json({ error: "Already published" }, { status: 400 });
-  }
-
   const spec = scenario.spec as OsceSpec;
 
   try {
+    // Clean up stale Dograh workflows if republishing
+    if (scenario.status === "published") {
+      const staleIds = [scenario.dograhWorkflowIdTraining, scenario.dograhWorkflowIdExam].filter(Boolean);
+      await Promise.allSettled(staleIds.map((wid) => dograh.deleteWorkflow(Number(wid))));
+      await db.osceScenario.update({
+        where: { id },
+        data: { status: "draft", dograhWorkflowIdTraining: null, dograhWorkflowIdExam: null },
+      });
+    }
+
     async function createAndPublish(name: string, mode: "training" | "exam") {
       const wf = await dograh.createWorkflow(name, buildDograhWorkflow(spec, mode));
       await dograh.createDraft(wf.id);

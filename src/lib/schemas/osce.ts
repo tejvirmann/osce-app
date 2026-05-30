@@ -37,7 +37,7 @@ export type TtsVoiceKey = keyof typeof TTS_VOICES;
 export const ModeConfigSchema = z.object({
   llm_provider: z.literal("openrouter"),
   llm_model: z.string(),
-  tts_voice: z.enum(["openai-nova", "orpheus-tara", "zonos", "elevenlabs-rachel"]).default("openai-nova"),
+  tts_voice: z.enum(["openai-nova", "orpheus-tara", "zonos", "elevenlabs-rachel"]).default("elevenlabs-rachel"),
   tts_exaggeration: z.number().optional(),
   // legacy fields — kept so old specs still parse
   tts: z.string().optional(),

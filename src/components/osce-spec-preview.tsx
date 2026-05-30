@@ -156,7 +156,7 @@ export function OsceSpecPreview({ spec, onSpecChange }: Props) {
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Transitions</p>
                 {editable && (
-                  <Button size="xs" variant="outline" nativeButton={false}
+                  <Button size="xs" variant="outline"
                     onClick={() => patch({
                       transitions: [...spec.transitions, {
                         from: spec.states[0]?.id ?? "",

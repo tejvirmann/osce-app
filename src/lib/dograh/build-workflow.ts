@@ -7,7 +7,7 @@ export function buildDograhWorkflow(spec: OsceSpec, mode: "training" | "exam") {
 
   const modeConfig = spec.modes[mode];
   const voiceKey = (modeConfig.tts_voice ?? "openai-nova") as TtsVoiceKey;
-  const ttsConfig = TTS_VOICES[voiceKey]?.dograh ?? TTS_VOICES["openai-nova"].dograh;
+  const ttsConfig = TTS_VOICES[voiceKey]?.dograh ?? TTS_VOICES["elevenlabs-rachel"].dograh;
 
   const globalNode = {
     id: "global",
@@ -62,8 +62,8 @@ export function buildDograhWorkflow(spec: OsceSpec, mode: "training" | "exam") {
     },
   };
 
-  // Transition edges from spec
-  const transitionEdges = spec.transitions.map((t) => ({
+  // Transition edges from spec (exclude any that target the start node — startCall cannot have incoming edges)
+  const transitionEdges = spec.transitions.filter((t) => t.to !== startState.id).map((t) => ({
     id: `${t.from}-${t.to}`,
     animated: true,
     type: "custom",
